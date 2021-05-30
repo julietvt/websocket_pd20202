@@ -1,4 +1,5 @@
 const { testHandler } = require('./eventsHandlers');
+
 module.exports = function connectionHandler(socket) {
   //рукопожатие
   const handshake = socket.handshake;

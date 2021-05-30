@@ -19,9 +19,24 @@ const io = socketIO(server, { corsOpt });
 
 const router = require('./router');
 const { connect } = require('./router');
+const { default: socket } = require('../client/src/api/ws');
 app.use(router);
 
-io.on('connection', connectionHandler);
+const rooms = ['room1', 'room2'];
+const joinToRooms = (socket) => {
+  rooms.forEach((room) => {
+    socket.join(room);
+  });
+};
+
+io.on('connection', function connectionHandlerFun(socket) {
+  joinToRooms(socket);
+  socket.on('message', (room, message) => {
+    io.on(room).emit('new-message', room, message);
+  });
+  socket.on('join-to-room', (room) => {});
+});
+
 io.on('disconnect', (reason) => {
   console.log(reason);
 });
