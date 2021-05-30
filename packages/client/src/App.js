@@ -3,49 +3,49 @@ import React, { Component } from 'react';
 import { emitTest, emitMessage } from './api/ws/api.js';
 import socket from './api/ws';
 import styles from './App.css';
+import MessagesList from './components/MessagesList';
+import UserList from './components/UserList';
 
-function MessagesList(props) {
-  const { messages } = props;
-  return (
-    <ul className={styles.msgList}>
-      {messages.map((msg, index) => (
-        <li key={index}>{msg}</li>
-      ))}
-    </ul>
-  );
-}
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      room1: { messages: [] },
-      room2: { messages: [] },
-      currentRoom: 'room1',
+      users: new Map(),
+      currentUser: '',
       message: '',
     };
   }
-  componentDidMount() {
-    socket.on('new-message', this.handlerNewMessage);
-  }
+  componentDidMount() {}
 
-  handlerNewMessage = (room, message) => {
-    console.log(room);
-    this.setState({
-      [room]: {
-        messages: [...this.state[room].messages, message],
-      },
-    });
+  selectUser = (user) => {
+    this.setState({ currentUser: user });
   };
 
-  switchRoom = (e) => {
-    this.setState({ currentRoom: e.target.value });
+  addUser = (id) => {
+    this.state.users.set(id, []);
+    this.setState({ users: this.state.users });
+  };
+
+  deleteUser = (id) => {
+    this.state.users.delete(id);
+    this.setState({ users: this.state.users });
   };
 
   sendMessage = () => {
-    const { currentRoom, message } = this.state;
-    emitMessage(currentRoom, message);
-    this.setState({ message: '' });
+    if(this.state.currentUser){
+      this.state.currentUser.get(this.state.currentUser).push({
+        body: this.state.message,
+        timestamp: new Date(),
+      });
+      socket.emit('send-message', this.state.currentUser, {
+        body: this.state.message,
+        timestamp: new Date(),
+      });
+      this.setState({ message: ''});
+    }
   };
+
+    }
 
   render() {
     const {
